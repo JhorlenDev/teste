@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Fametro Tecnico | Cursos Tecnicos{% endblock %}
+
+{% block content %}
+  <section class="catalog-section" id="catalogo">
+    <div class="container">
+      <div class="section-heading section-heading-inline">
+        <div>
+          <span class="eyebrow">Nosso Catalogo</span>
+          <h2>Cursos tecnicos disponiveis</h2>
+          <p>Escolha o melhor curso para voce.</p>
+        </div>
+      </div>
+
+      <div class="course-grid">
+        {% for course in courses %}
+          <article class="course-card">
+            <div class="course-image-wrap">
+              {% if course["image_path"] %}
+                {% if course["image_path"].startswith("http") %}
+                  <img class="course-image" src="{{ course['image_path'] }}" alt="Imagem do curso {{ course['title'] }}">
+                {% else %}
+                  <img class="course-image" src="{{ url_for('static', filename=course['image_path']) }}" alt="Imagem do curso {{ course['title'] }}">
+                {% endif %}
+              {% else %}
+                <div class="course-image placeholder-image">Fametro</div>
+              {% endif %}
+              <div class="course-badges">
+                <span>{{ course["category"] }}</span>
+                <span>{{ course["modality"] }}</span>
+                {% if course["featured"] %}
+                  <span class="badge-featured">Destaque</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="course-body">
+              <h3>{{ course["title"] }}</h3>
+              <p>{{ course["description"] }}</p>
+
+              <div class="course-actions">
+                <button
+                  class="button button-outline details-button"
+                  type="button"
+                  data-course-title="{{ course['title'] }}"
+                  data-course-description="{{ course['description'] }}"
+                  data-course-category="{{ course['category'] }}"
+                  data-course-modality="{{ course['modality'] }}"
+                  data-course-contact-url="{{ course['contact_url'] }}"
+                  data-course-image="{% if course['image_path'] %}{% if course['image_path'].startswith('http') %}{{ course['image_path'] }}{% else %}{{ url_for('static', filename=course['image_path']) }}{% endif %}{% endif %}"
+                >
+                  Ver detalhes
+                </button>
+                {% if course["contact_url"] %}
+                  <a class="button contact-button" href="{{ course['contact_url'] }}" target="_blank" rel="noreferrer">{{ course["contact_label"] }}</a>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+        {% else %}
+          <div class="empty-state">
+            <h3>Nenhum curso cadastrado ainda.</h3>
+            <p>Entre no painel administrativo para adicionar os primeiros itens do catálogo.</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" id="course-modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-course-title">
+      <button class="modal-close" type="button" aria-label="Fechar">×</button>
+
+      <div class="modal-media-wrap">
+        <img class="modal-media" id="modal-course-image" src="" alt="">
+        <div class="modal-media placeholder-image" id="modal-course-placeholder" hidden>Fametro</div>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-badges">
+          <span id="modal-course-category"></span>
+          <span id="modal-course-modality"></span>
+        </div>
+        <h3 id="modal-course-title"></h3>
+        <p id="modal-course-description"></p>
+        <div class="modal-actions">
+          <a class="button contact-button" id="modal-course-contact" href="#" target="_blank" rel="noreferrer">Entrar em contato</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const modal = document.getElementById("course-modal");
+      const modalTitle = document.getElementById("modal-course-title");
+      const modalDescription = document.getElementById("modal-course-description");
+      const modalCategory = document.getElementById("modal-course-category");
+      const modalModality = document.getElementById("modal-course-modality");
+      const modalImage = document.getElementById("modal-course-image");
+      const modalPlaceholder = document.getElementById("modal-course-placeholder");
+      const modalContact = document.getElementById("modal-course-contact");
+      const closeButton = modal.querySelector(".modal-close");
+      const detailButtons = document.querySelectorAll(".details-button");
+
+      const openModal = (button) => {
+        modalTitle.textContent = button.dataset.courseTitle || "";
+        modalDescription.textContent = button.dataset.courseDescription || "";
+        modalCategory.textContent = button.dataset.courseCategory || "Tecnico";
+        modalModality.textContent = button.dataset.courseModality || "";
+        modalContact.href = button.dataset.courseContactUrl || "#";
+
+        if (button.dataset.courseImage) {
+          modalImage.src = button.dataset.courseImage;
+          modalImage.alt = `Imagem do curso ${button.dataset.courseTitle || ""}`;
+          modalImage.hidden = false;
+          modalPlaceholder.hidden = true;
+        } else {
+          modalImage.hidden = true;
+          modalPlaceholder.hidden = false;
+        }
+
+        modal.hidden = false;
+        document.body.classList.add("modal-open");
+      };
+
+      const closeModal = () => {
+        modal.hidden = true;
+        document.body.classList.remove("modal-open");
+      };
+
+      detailButtons.forEach((button) => {
+        button.addEventListener("click", () => openModal(button));
+      });
+
+      closeButton.addEventListener("click", closeModal);
+
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !modal.hidden) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+{% endblock %}

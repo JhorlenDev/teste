@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Admin | Fametro{% endblock %}
+
+{% block content %}
+  <section class="admin-section">
+    <div class="container admin-layout">
+      <div class="panel">
+        <div class="section-heading">
+          <span class="eyebrow">Painel administrativo</span>
+          <h1>{% if editing_course %}Editar curso{% else %}Cadastrar curso{% endif %}</h1>
+        </div>
+
+        <form
+          method="post"
+          enctype="multipart/form-data"
+          class="form-grid"
+          action="{% if editing_course %}{{ url_for('update_course', course_id=editing_course['id']) }}{% else %}{{ url_for('create_course') }}{% endif %}"
+        >
+          <label>
+            <span>Título</span>
+            <input type="text" name="title" required value="{{ editing_course['title'] if editing_course else '' }}">
+          </label>
+
+          <div class="form-row">
+            <label>
+              <span>Modalidade</span>
+              {% set selected_modality = editing_course['modality'] if editing_course else '' %}
+              <select name="modality" required>
+                <option value="">Selecione</option>
+                <option value="Presencial" {% if selected_modality == 'Presencial' %}selected{% endif %}>Presencial</option>
+                <option value="Semipresencial" {% if selected_modality == 'Semipresencial' %}selected{% endif %}>Semipresencial</option>
+                <option value="EAD" {% if selected_modality == 'EAD' %}selected{% endif %}>EAD</option>
+              </select>
+            </label>
+            <label>
+              <span>Categoria</span>
+              <input type="text" value="Tecnico" disabled>
+            </label>
+          </div>
+
+          <label>
+            <span>Descrição</span>
+            <textarea name="description" rows="5" required>{{ editing_course['description'] if editing_course else '' }}</textarea>
+          </label>
+
+          <div class="form-row">
+            <label>
+              <span>Enviar imagem</span>
+              <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp">
+            </label>
+            <label>
+              <span>Ou use a URL da imagem</span>
+              <input
+                type="url"
+                name="image_url"
+                placeholder="https://..."
+                value="{{ editing_course['image_path'] if editing_course and editing_course['image_path'] and editing_course['image_path'].startswith('http') else '' }}"
+              >
+            </label>
+          </div>
+
+          {% if editing_course and editing_course['image_path'] %}
+            <div class="current-image">
+              <span>Imagem atual</span>
+              {% if editing_course["image_path"].startswith("http") %}
+                <img src="{{ editing_course['image_path'] }}" alt="Imagem atual do curso {{ editing_course['title'] }}">
+              {% else %}
+                <img src="{{ url_for('static', filename=editing_course['image_path']) }}" alt="Imagem atual do curso {{ editing_course['title'] }}">
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="form-row">
+            <label>
+              <span>Link de contato</span>
+              <input type="url" name="contact_url" placeholder="https://..." value="{{ editing_course['contact_url'] if editing_course else '' }}">
+            </label>
+            <label>
+              <span>Texto do botao</span>
+              <input type="text" value="Entrar em contato" disabled>
+            </label>
+          </div>
+
+          <label class="checkbox-field">
+            <input type="checkbox" name="featured" {% if editing_course and editing_course['featured'] %}checked{% endif %}>
+            <span>Marcar curso como destaque</span>
+          </label>
+
+          <div class="form-actions">
+            <button class="button" type="submit">{% if editing_course %}Salvar alterações{% else %}Cadastrar curso{% endif %}</button>
+            {% if editing_course %}
+              <a class="button button-outline" href="{{ url_for('admin_dashboard') }}">Cancelar edição</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="section-heading section-heading-inline">
+          <div>
+            <span class="eyebrow">Cursos cadastrados</span>
+            <h2>Gerenciar catálogo</h2>
+          </div>
+          <p>{{ courses|length }} item(ns)</p>
+        </div>
+
+        <div class="admin-course-list">
+          {% for course in courses %}
+            <article class="admin-course-card">
+              <div>
+                <div class="admin-tags">
+                  <span>{{ course["category"] }}</span>
+                  <span>{{ course["modality"] }}</span>
+                </div>
+                <h3>{{ course["title"] }}</h3>
+                <p>{{ course["description"] }}</p>
+              </div>
+
+              <div class="admin-card-actions">
+                <a class="button button-outline" href="{{ url_for('edit_course', course_id=course['id']) }}">Editar</a>
+                <form method="post" action="{{ url_for('delete_course', course_id=course['id']) }}" onsubmit="return confirm('Deseja remover este curso?');">
+                  <button class="button button-danger" type="submit">Excluir</button>
+                </form>
+              </div>
+            </article>
+          {% else %}
+            <div class="empty-state">
+              <h3>Sem cursos cadastrados.</h3>
+              <p>Use o formulário ao lado para adicionar o primeiro curso.</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

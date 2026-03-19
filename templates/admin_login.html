@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Admin | Fametro{% endblock %}
+
+{% block content %}
+  <section class="admin-login-section">
+    <div class="container narrow-container">
+      <div class="panel">
+        <span class="eyebrow">Acesso administrativo</span>
+        <h1>Entrar no painel</h1>
+        <p>Use a senha do administrador para cadastrar e organizar os cursos exibidos no catálogo.</p>
+
+        <form method="post" class="form-grid">
+          <label>
+            <span>Senha</span>
+            <input type="password" name="password" placeholder="Digite a senha do admin" required>
+          </label>
+          <button class="button" type="submit">Entrar</button>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}
